@@ -1,32 +1,37 @@
 ---
-dist: bionic
+# at the moment (2018) only precise and trusty are available - but "bionic" would be more suitable
+dist: trusty
+# use the container-based infrastructure
+sudo: required
 
 language: python
 
-python:
-  - "3.5"
-
 addons:
   apt:
+    sources:
+      # python3-svg.path is not part of "trusty"
+      - sourceline: deb http://in.archive.ubuntu.com/ubuntu/ bionic universe
     packages:
-      - build-essential
-      - devscripts
-      - equivs
-      - fakeroot
-      - gir1.2-gtk-3.0
-      - help2man
-      - python3-gi
-      - python3-numpy
-      - python3-opengl
-      - python3-pytest
-      - python3-setuptools
       - python3-svg.path
-      - python3-yaml
+
+before_install:
+  - "sudo apt install -y -t trusty 
+      build-essential
+      devscripts
+      equivs
+      fakeroot
+      gir1.2-gtk-3.0
+      help2man
+      python3-flake8
+      python3-gi
+      python3-numpy
+      python3-opengl
+      python3-pytest
+      python3-setuptools
+      python3-yaml
+      "
 
 script:
-  # The commands below are run within the virtualenv with python 3.5. Thus python packages from
-  # the system are ignored for "make test".
-  - pip install flake8 pytest
   - make test
   - ./setup.py sdist
   - pycam/run_gui.py --help

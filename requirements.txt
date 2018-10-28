@@ -1,3 +1,4 @@
+PyGObject
 PyOpenGL
 PyYAML
 svg.path
