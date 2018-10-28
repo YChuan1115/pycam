@@ -183,10 +183,16 @@ def parse_path_groups_from_svg_file(filename, callback=None):
     return target.groups
 
 
-def _get_polygons_from_svg_path(path: svg.path.Path, z, accuracy=0.1, min_interpolation_steps=5):
+def _get_polygons_from_svg_path(path: svg.path.Path, z, interpolation_accuracy=0.1,
+                                min_interpolation_steps=5, max_interpolation_steps=32):
     """ convert an svg.path.Path object into a list of pycam.Geometry.Polygon.Polygon
 
+    Non-linear segments are interpolated into a set of lines.
+
     @param z: the wanted z value for all (flat by design) paths
+    @param interpolation_accuracy: peferred step width to be used for interpolation
+    @param min_interpolation_steps: minimum number of steps to be used for interpolation
+    @param max_interpolation_steps: maximum number of steps to be used for interpolation
     """
     polygons = []
     previous_segment_end = None
@@ -201,7 +207,12 @@ def _get_polygons_from_svg_path(path: svg.path.Path, z, accuracy=0.1, min_interp
             step_count = 1
         else:
             # we need to add points on the (non-straight) way
-            step_count = min(min_interpolation_steps, math.ceil(segment.length() / accuracy))
+            step_count = math.ceil(segment.length() / interpolation_accuracy)
+            if min_interpolation_steps is not None:
+                step_count = max(min_interpolation_steps, step_count)
+            if max_interpolation_steps is not None:
+                step_count = min(max_interpolation_steps, step_count)
+        assert min_interpolation_steps > 0
         previous_path_point = None
         for step_index in range(0, step_count + 1):
             position = segment.point(step_index / step_count)
